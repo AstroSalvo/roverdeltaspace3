@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Ambiente di Sviluppo Rover DeltaSpace 2026",
+      "hasCanvas": false,
+      "bodyTextLen": 320,
+      "bodyTextHash": "d983048b0e8471f0181a6d81cdd11f0062287c70a862683671838448c3acde40",
+      "bodyTextPrefix": "DELTASPACE · AMBIENTE DI SVILUPPO 2026 Ambiente di Sviluppo Rove",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Ambiente di Sviluppo Rover DeltaSpace 2026",
+      "hasCanvas": false,
+      "bodyTextLen": 327,
+      "bodyTextHash": "582b16e497111627b3208594f595aa292ba8da6a413fadc5623f6ab8e7fe4edf",
+      "bodyTextPrefix": "DELTASPACE · AMBIENTE DI SVILUPPO 2026 Ambiente di Sviluppo Rove",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
