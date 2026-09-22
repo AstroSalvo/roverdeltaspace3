@@ -96,31 +96,47 @@ function makeAlbedo(terrain: Terrain) {
 }
 
 /**
- * Unit rock whose *upper* vertices sit inside the unit sphere.
- * Collision uses the same (rx, ry, rz) ellipsoid as the instance scale, so the
- * hitbox is the convex envelope of the visible mesh.
+ * Irregular rock: higher subdivision + multi-octave radial displacement.
+ * Lower hemisphere compressed so it embeds into the ground.
+ * Collision still uses the (rx, ry, rz) ellipsoid envelope.
  */
 function makeRockGeometry(seed: number) {
-  const geo = new THREE.IcosahedronGeometry(1, 2);
+  const geo = new THREE.IcosahedronGeometry(1, 3);
   const pos = geo.attributes.position!;
   const rand = mulberry32(seed);
+
+  const displace = (x: number, y: number, z: number) => {
+    const n1 = Math.sin(x * 4.1 + y * 3.7 + z * 2.9 + seed * 0.01) * 0.5 + 0.5;
+    const n2 = Math.sin(x * 9.3 - y * 7.1 + z * 5.5 + 17.3) * 0.5 + 0.5;
+    const n3 = Math.sin(x * 15.2 + y * 11.8 - z * 8.4 + 41.7) * 0.5 + 0.5;
+    return 0.78 + n1 * 0.22 + n2 * 0.12 + n3 * 0.06;
+  };
+
   for (let i = 0; i < pos.count; i++) {
     let x = pos.getX(i);
     let y = pos.getY(i);
     let z = pos.getZ(i);
-    const n = 0.9 + rand() * 0.16;
-    x *= n;
-    y *= n;
-    z *= n;
-    if (y < 0) y *= 0.52;
+    const len = Math.hypot(x, y, z) || 1;
+    const nx = x / len;
+    const ny = y / len;
+    const nz = z / len;
+    let r = displace(nx, ny, nz);
+    if (y < 0) {
+      r *= 0.45 + 0.35 * (1 + y);
+    }
+    r *= 0.94 + rand() * 0.12;
+    x = nx * r;
+    y = ny * r;
+    z = nz * r;
     pos.setXYZ(i, x, y, z);
   }
+
   let maxR = 0;
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i);
     const y = pos.getY(i);
     const z = pos.getZ(i);
-    if (y >= -0.08) maxR = Math.max(maxR, Math.hypot(x, y, z));
+    if (y >= -0.1) maxR = Math.max(maxR, Math.hypot(x, y, z));
   }
   if (maxR > 1e-6) {
     const s = 1 / maxR;
@@ -128,6 +144,16 @@ function makeRockGeometry(seed: number) {
       pos.setXYZ(i, pos.getX(i) * s, pos.getY(i) * s, pos.getZ(i) * s);
     }
   }
+
+  const colors = new Float32Array(pos.count * 3);
+  for (let i = 0; i < pos.count; i++) {
+    const shade = 0.88 + rand() * 0.18;
+    colors[i * 3] = shade;
+    colors[i * 3 + 1] = shade * 0.97;
+    colors[i * 3 + 2] = shade * 0.93;
+  }
+  geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
   pos.needsUpdate = true;
   geo.computeVertexNormals();
   geo.computeBoundingSphere();
@@ -154,7 +180,11 @@ function placeRocks(
     mesh.frustumCulled = false;
     list.forEach((r, i) => {
       dummy.position.set(r.x, r.cy, r.z);
-      dummy.rotation.set(0, r.rotY, 0);
+      dummy.rotation.set(
+        (r.variant * 0.31) % (Math.PI * 0.15),
+        r.rotY,
+        (r.variant * 0.19) % (Math.PI * 0.12),
+      );
       dummy.scale.set(r.rx, r.ry, r.rz);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
@@ -211,9 +241,10 @@ export function buildWorld(terrain: Terrain) {
   const rockGeos = [makeRockGeometry(0x91a2), makeRockGeometry(0xc31d), makeRockGeometry(0x5e07)];
   const rockMat = new THREE.MeshStandardMaterial({
     color: 0xffffff,
-    roughness: 0.92,
-    metalness: 0.03,
-    flatShading: true,
+    roughness: 0.88,
+    metalness: 0.04,
+    flatShading: false,
+    vertexColors: true,
   });
   const dummy = new THREE.Object3D();
   const color = new THREE.Color();
@@ -221,8 +252,12 @@ export function buildWorld(terrain: Terrain) {
     root.add(mesh);
   }
 
-  const pebbleMat = rockMat.clone();
-  pebbleMat.flatShading = true;
+  const pebbleMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.9,
+    metalness: 0.03,
+    flatShading: true,
+  });
   const pebbleGeo = new THREE.DodecahedronGeometry(1, 0);
   const pebbles = new THREE.InstancedMesh(pebbleGeo, pebbleMat, terrain.pebbles.length);
   pebbles.castShadow = true;
