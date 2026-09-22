@@ -35,3 +35,6 @@ export const WHEEL_LAYOUT = [
 ] as const;
 
 export const WHEEL_COUNT = WHEEL_LAYOUT.length;
+
+/** Force-debug scale: Newtons → arrow length (m). */
+export const FORCE_ARROW_SCALE = 0.0018;

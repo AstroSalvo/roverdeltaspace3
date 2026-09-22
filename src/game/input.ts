@@ -24,6 +24,7 @@ const GAME_CODES = new Set([
   "KeyR",
   "KeyQ",
   "KeyE",
+  "KeyF",
 ]);
 
 function radialDeadzone(x: number, y: number, dz = 0.16): { x: number; y: number } {
@@ -82,7 +83,6 @@ export function createInput() {
     for (const pad of pads) {
       if (!pad || pad.mapping !== "standard") continue;
       const stick = radialDeadzone(pad.axes[0] ?? 0, pad.axes[1] ?? 0);
-      // LY: -1 is up → throttle +. LX left is − → steer + (A).
       actions.throttle += -stick.y;
       actions.steer += -stick.x;
       if (pad.buttons[12]?.pressed) actions.throttle += 1;
