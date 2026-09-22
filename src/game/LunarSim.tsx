@@ -1,4 +1,4 @@
-import { Camera, Gauge, RotateCcw, Triangle } from "lucide-react";
+import { Camera, Gauge, RotateCcw, Triangle, Activity } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -109,7 +109,7 @@ function StartOverlay({ onStart }: { onStart: () => void }) {
             Ctrl — accovaccia
           </li>
           <li className="rounded-md border border-line bg-elevated px-3 py-2 text-muted">
-            C camera / POV · R reset
+            C camera · F forze · R reset
           </li>
         </ul>
         <button
@@ -170,12 +170,26 @@ function Hud({ hud, engine }: { hud: HudSnapshot; engine: EngineHandle | null })
               {hud.contacts}/{WHEEL_COUNT} contatto
             </span>
           </div>
+          {hud.showForces ? (
+            <div className="mt-2 flex flex-wrap gap-3 font-mono text-[10px] text-faint">
+              <span className="text-[#4488ff]">● gravità</span>
+              <span className="text-[#44dd66]">● normali ruote</span>
+              <span className="text-[#ffcc33]">● trazione</span>
+            </div>
+          ) : null}
         </div>
       </div>
 
       <div className="pointer-events-auto absolute top-3 right-3 z-10 hidden flex-col gap-2 sm:top-4 sm:right-4 sm:flex">
         <IconBtn label={`Camera ${camName}`} onClick={() => engine?.cycleCamera()}>
           <Camera className="size-4" />
+        </IconBtn>
+        <IconBtn
+          label={hud.showForces ? "Nascondi forze" : "Mostra forze"}
+          onClick={() => engine?.toggleForces()}
+          active={hud.showForces}
+        >
+          <Activity className="size-4" />
         </IconBtn>
         <IconBtn label="Reset" onClick={() => engine?.reset()}>
           <RotateCcw className="size-4" />
@@ -249,17 +263,21 @@ function IconBtn({
   children,
   onClick,
   label,
+  active,
 }: {
   children: ReactNode;
   onClick: () => void;
   label: string;
+  active?: boolean;
 }) {
   return (
     <button
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="flex size-11 items-center justify-center rounded-md border border-line bg-surface text-fg transition-opacity duration-150 hover:opacity-90"
+      className={`flex size-11 items-center justify-center rounded-md border border-line bg-surface text-fg transition-opacity duration-150 hover:opacity-90 ${
+        active ? "ring-1 ring-primary bg-primary/20" : ""
+      }`}
     >
       {children}
     </button>
@@ -322,6 +340,9 @@ function TouchPad({ engine }: { engine: EngineHandle | null }) {
       <div className="pointer-events-auto flex flex-col gap-2">
         <IconBtn label="Camera" onClick={() => engine?.cycleCamera()}>
           <Camera className="size-4" />
+        </IconBtn>
+        <IconBtn label="Forze" onClick={() => engine?.toggleForces()}>
+          <Activity className="size-4" />
         </IconBtn>
         <IconBtn label="Reset" onClick={() => engine?.reset()}>
           <RotateCcw className="size-4" />
